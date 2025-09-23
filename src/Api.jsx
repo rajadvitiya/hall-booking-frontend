@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: " https://hall-booking-backend1.onrender.com" });
+const API = axios.create({ baseURL: "https://hall-booking-backend1.onrender.com" });
 
 // Add token for admin requests
 API.interceptors.request.use((req) => {
