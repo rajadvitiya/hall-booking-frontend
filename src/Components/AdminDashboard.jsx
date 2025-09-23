@@ -18,6 +18,11 @@ import {
   DialogActions,
   AppBar,
   Toolbar,
+  IconButton,
+  Menu,
+  MenuItem,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import API from "../Api";
 import { io } from "socket.io-client";
@@ -25,8 +30,8 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import PackageIcon from "@mui/icons-material/Category";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-
+import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
+import MenuIcon from "@mui/icons-material/Menu";
 
 // 🔹 Highlight search matches
 function HighlightedText({ text, highlight }) {
@@ -76,6 +81,17 @@ export default function AdminDashboard() {
   const [openAdminDialog, setOpenAdminDialog] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
+  // 📡 Responsive navbar state
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [anchorEl, setAnchorEl] = useState(null);
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+  const handleNavigation = (path) => {
+    window.location.href = path;
+    handleMenuClose();
+  };
 
   // 📡 Socket.IO setup
   useEffect(() => {
@@ -230,85 +246,124 @@ export default function AdminDashboard() {
 
   return (
     <Box>
-      {/* 🔝 Top Navbar */}
-      
+      {/* 🔝 Responsive Top Navbar */}
       <AppBar position="sticky" sx={{ backgroundColor: "#1976d2", mb: 4 }}>
-  <Toolbar>
-    <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
-      Admin Dashboard
-    </Typography>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
+            Admin Dashboard
+          </Typography>
 
-    <Button
-      color="inherit"
-      startIcon={<PackageIcon />}
-      onClick={() => (window.location.href = "/admin/packages")}
-    >
-      Manage Packages
-    </Button>
+          {isMobile ? (
+            <>
+              <IconButton
+                color="inherit"
+                edge="end"
+                onClick={handleMenuOpen}
+              >
+                <MenuIcon />
+              </IconButton>
 
-    <Button
-      color="inherit"
-      startIcon={<ManageAccountsIcon />}
-      sx={{ ml: 2 }}
-      onClick={() => (window.location.href = "/admin/contacts")}
-    >
-      Manage Contacts
-    </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
+                <MenuItem onClick={() => handleNavigation("/admin/packages")}>
+                  <PackageIcon sx={{ mr: 1 }} /> Manage Packages
+                </MenuItem>
+                <MenuItem onClick={() => handleNavigation("/admin/contacts")}>
+                  <ManageAccountsIcon sx={{ mr: 1 }} /> Manage Contacts
+                </MenuItem>
+                <MenuItem onClick={() => handleNavigation("/admin/gallery")}>
+                  <PhotoLibraryIcon sx={{ mr: 1 }} /> Manage Gallery
+                </MenuItem>
+                <MenuItem onClick={() => setOpenAdminDialog(true)}>
+                  <AdminPanelSettingsIcon sx={{ mr: 1 }} /> Update Admin
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    localStorage.removeItem("token");
+                    window.location.href = "/home";
+                  }}
+                >
+                  <LogoutIcon sx={{ mr: 1 }} /> Logout
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <>
+              <Button
+                color="inherit"
+                startIcon={<PackageIcon />}
+                onClick={() => (window.location.href = "/admin/packages")}
+              >
+                Manage Packages
+              </Button>
 
-    {/* New Gallery Management Button */}
-    <Button
-      color="inherit"
-      startIcon={<PhotoLibraryIcon />} // Use Material-UI gallery icon
-      sx={{ ml: 2 }}
-      onClick={() => (window.location.href = "/admin/gallery")}
-    >
-      Manage Gallery
-    </Button>
+              <Button
+                color="inherit"
+                startIcon={<ManageAccountsIcon />}
+                sx={{ ml: 2 }}
+                onClick={() => (window.location.href = "/admin/contacts")}
+              >
+                Manage Contacts
+              </Button>
 
-    <Button
-      color="inherit"
-      startIcon={<AdminPanelSettingsIcon />}
-      sx={{ ml: 2 }}
-      onClick={() => setOpenAdminDialog(true)}
-    >
-      Update Admin
-    </Button>
+              <Button
+                color="inherit"
+                startIcon={<PhotoLibraryIcon />}
+                sx={{ ml: 2 }}
+                onClick={() => (window.location.href = "/admin/gallery")}
+              >
+                Manage Gallery
+              </Button>
 
-    <Button
-      color="inherit"
-      startIcon={<LogoutIcon />}
-      sx={{ ml: 2 }}
-      onClick={() => {
-        localStorage.removeItem("token");
-        window.location.href = "/home";
-      }}
-    >
-      Logout
-    </Button>
-  </Toolbar>
-</AppBar>
+              <Button
+                color="inherit"
+                startIcon={<AdminPanelSettingsIcon />}
+                sx={{ ml: 2 }}
+                onClick={() => setOpenAdminDialog(true)}
+              >
+                Update Admin
+              </Button>
 
+              <Button
+                color="inherit"
+                startIcon={<LogoutIcon />}
+                sx={{ ml: 2 }}
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  window.location.href = "/home";
+                }}
+              >
+                Logout
+              </Button>
+            </>
+          )}
+        </Toolbar>
+      </AppBar>
 
-        <Box
-  sx={{
-    position: "relative",
-    zIndex: 2,
-    height: "100%", // ensures it takes the hero section height
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-  }}
->
-  <Typography variant="h3" fontWeight="bold">
-    Bookings
-  </Typography>
-</Box>
+      {/* 🔹 Hero Section */}
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 2,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+      >
+        <Typography variant="h3" fontWeight="bold">
+          Bookings
+        </Typography>
+      </Box>
 
-
+      {/* 🔹 Main Content */}
       <Box sx={{ p: 4 }}>
-        {/* 🔍 Search Bar */}
+        {/* Search Bar */}
         <Box sx={{ mb: 3 }}>
           <TextField
             label="Search by Name"
@@ -347,9 +402,7 @@ export default function AdminDashboard() {
                   });
 
                   return (
-                    
                     <Grid item xs={12} md={6} lg={4} key={b._id || b.id}>
-                      
                       <Card
                         sx={{
                           boxShadow: 4,
@@ -431,7 +484,7 @@ export default function AdminDashboard() {
           </>
         )}
 
-        {/* ✅ Toast Snackbar */}
+        {/* Toast Snackbar */}
         <Snackbar
           open={toast.open}
           autoHideDuration={4000}
@@ -448,7 +501,7 @@ export default function AdminDashboard() {
           </Alert>
         </Snackbar>
 
-        {/* ✅ Amount Dialog */}
+        {/* Amount Dialog */}
         <Dialog open={openAmountDialog} onClose={() => setOpenAmountDialog(false)}>
           <DialogTitle>Enter Amount for Booking</DialogTitle>
           <DialogContent>
@@ -471,7 +524,7 @@ export default function AdminDashboard() {
           </DialogActions>
         </Dialog>
 
-        {/* ✅ Update Admin Dialog */}
+        {/* Update Admin Dialog */}
         <Dialog open={openAdminDialog} onClose={() => setOpenAdminDialog(false)}>
           <DialogTitle>Update Admin Credentials</DialogTitle>
           <DialogContent>
