@@ -33,10 +33,26 @@ export default function Home() {
   const welcomeText = "Welcome to Heritage Marriage Hall 💍";
 
   return (
-    <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", py: 5, px: 2, borderRadius: 4  }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        py: 5,
+        px: 2,
+        borderRadius: 4,
+      }}
+    >
       <Container maxWidth="lg">
         {/* Hero Carousel */}
-        <Box sx={{ height: { xs: 300, md: 450 }, borderRadius: 3, overflow: "hidden", mb: 5, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
+        <Box
+          sx={{
+            height: { xs: 300, md: 450 },
+            borderRadius: 3,
+            overflow: "hidden",
+            mb: 5,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+          }}
+        >
           <Carousel indicators={false} navButtonsAlwaysVisible animation="slide" interval={4000}>
             {hallImages.map((img, index) => (
               <Box
@@ -57,7 +73,12 @@ export default function Home() {
               >
                 <Typography
                   variant="h3"
-                  sx={{ fontWeight: "bold", fontSize: { xs: "1.8rem", sm: "2.5rem", md: "3rem" }, textAlign: "center", px: 2 }}
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: { xs: "1.8rem", sm: "2.5rem", md: "3rem" },
+                    textAlign: "center",
+                    px: 2,
+                  }}
                 >
                   {welcomeText.split("").map((char, i) => (
                     <motion.span
@@ -103,14 +124,28 @@ export default function Home() {
         </Box>
 
         {/* Facilities Section */}
-        <Typography variant="h4" fontWeight="bold" textAlign="center" mb={4} sx={{ textDecoration: "underline", textDecorationColor: "#fff", color: "white" }}>
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          textAlign="center"
+          mb={4}
+          sx={{
+            textDecoration: "underline",
+            textDecorationColor: "#fff",
+            color: "white",
+          }}
+        >
           Our Facilities
         </Typography>
 
         <Grid container spacing={4} justifyContent="center">
           {facilities.map((facility, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <motion.div initial={{ y: 50, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6 }}
+              >
                 <Card
                   sx={{
                     height: 220,
@@ -123,15 +158,20 @@ export default function Home() {
                     px: 2,
                     py: 4,
                     cursor: "pointer",
-                    backgroundColor: "rgba(255,255,255,0.15)", // subtle transparent white
+                    backgroundColor: "rgba(255,255,255,0.15)",
                     color: "white",
-                    backdropFilter: "blur(10px)", // frosted glass effect
-                    "&:hover": { transform: "scale(1.05)", boxShadow: "0 15px 35px rgba(0,0,0,0.4)" },
+                    backdropFilter: "blur(10px)",
+                    "&:hover": {
+                      transform: "scale(1.05)",
+                      boxShadow: "0 15px 35px rgba(0,0,0,0.4)",
+                    },
                     transition: "all 0.3s ease",
                   }}
                 >
                   <Box sx={{ mb: 2 }}>{facility.icon}</Box>
-                  <Typography variant="h6" fontWeight="bold">{facility.title}</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    {facility.title}
+                  </Typography>
                   <Typography variant="body2">{facility.desc}</Typography>
                 </Card>
               </motion.div>
