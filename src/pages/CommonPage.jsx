@@ -77,24 +77,22 @@ export default function CommonPage() {
   );
 
   return (
-    <Box sx={{ display: "flex" }}>
-      {/* Mobile Menu Button */}
-      {isMobile && (
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={handleDrawerToggle}
-          sx={{ position: "fixed", top: 16, left: 16, zIndex: 1300 }}
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
+    <Box sx={{ display: "flex" }} ml={2}>
+      {/* ✅ Always show Menu Button */}
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        onClick={handleDrawerToggle}
+        sx={{ position: "fixed", top: 16, left: 16, zIndex: 1300 }}
+      >
+        <MenuIcon />
+      </IconButton>
 
-      {/* Drawer */}
+      {/* ✅ Drawer: temporary on mobile, persistent on desktop */}
       <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
-        open={isMobile ? mobileOpen : true}
+        variant={isMobile ? "temporary" : "persistent"}
+        open={isMobile ? mobileOpen : mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
         sx={{
@@ -109,8 +107,16 @@ export default function CommonPage() {
         {drawerContent}
       </Drawer>
 
-      {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, ml: isMobile ? 0 : `${drawerWidth}px` }}>
+      {/* ✅ Main Content shifts on desktop when sidebar open */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          transition: "margin 0.3s ease",
+          ml: isMobile ? 0 : mobileOpen ? `${drawerWidth}px` : 0,
+        }}
+      >
         <Outlet />
       </Box>
     </Box>
