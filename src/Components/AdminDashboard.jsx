@@ -18,22 +18,23 @@ import {
   DialogActions,
   AppBar,
   Toolbar,
-  IconButton,
   Drawer,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  IconButton,
 } from "@mui/material";
-import API from "../Api";
-import { io } from "socket.io-client";
 
+import { io } from "socket.io-client";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import PackageIcon from "@mui/icons-material/Category";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import MenuIcon from "@mui/icons-material/Menu";
+
+import API from "../Api";
 
 // 🔹 Highlight search matches
 function HighlightedText({ text, highlight }) {
@@ -63,24 +64,23 @@ function HighlightedText({ text, highlight }) {
 }
 
 export default function AdminDashboard() {
-  const MAX_AMOUNT = 1000000;
+  const MAX_AMOUNT = 1000000; // Razorpay max amount limit in ₹
 
   const [bookings, setBookings] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ open: false, message: "", severity: "info" });
 
+  const [toast, setToast] = useState({ open: false, message: "", severity: "info" });
   const [openAmountDialog, setOpenAmountDialog] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [amount, setAmount] = useState("");
-
   const [openAdminDialog, setOpenAdminDialog] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  // Drawer state
+  // Mobile drawer
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
@@ -154,14 +154,21 @@ export default function AdminDashboard() {
   const handleConfirmApprove = async () => {
     const amt = Number(amount);
     if (!amount || isNaN(amt) || amt <= 0) {
-      return setToast({ open: true, message: "Please enter a valid amount.", severity: "error" });
+      setToast({ open: true, message: "Please enter a valid amount.", severity: "error" });
+      return;
     }
     if (amt > MAX_AMOUNT) {
-      return setToast({ open: true, message: `⚠️ Amount cannot exceed ₹${MAX_AMOUNT.toLocaleString()}.`, severity: "error" });
+      setToast({
+        open: true,
+        message: `⚠️ Amount cannot exceed ₹${MAX_AMOUNT.toLocaleString()}.`,
+        severity: "error",
+      });
+      return;
     }
+
     try {
       const token = localStorage.getItem("token");
-      setToast({ open: true, message: "Processing approval...", severity: "info" });
+      setToast({ open: true, message: "Processing approval, please wait...", severity: "info" });
 
       await API.post(
         `/admin/bookings/${selectedBookingId}/approve`,
@@ -171,13 +178,18 @@ export default function AdminDashboard() {
 
       setOpenAmountDialog(false);
       fetchBookings();
-      setToast({ open: true, message: `Booking approved ₹${amt.toLocaleString()}`, severity: "success" });
+      setToast({
+        open: true,
+        message: `Booking approved with amount ₹${amt.toLocaleString()}`,
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error approving booking:", error.response?.data || error.message);
       const errorMessage =
         error.response?.data?.description?.includes("maximum amount")
-          ? "⚠️ Amount exceeds Razorpay limit."
+          ? "⚠️ Amount exceeds Razorpay limit. Please enter a smaller amount."
           : error.response?.data?.message || "Error approving booking";
+
       setToast({ open: true, message: errorMessage, severity: "error" });
     }
   };
@@ -185,9 +197,13 @@ export default function AdminDashboard() {
   const handleReject = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await API.post(`/admin/bookings/${id}/reject`, { id }, { headers: { Authorization: `Bearer ${token}` } });
+      await API.post(
+        `/admin/bookings/${id}/reject`,
+        { id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setBookings((prev) => prev.filter((b) => b._id !== id && b.id !== id));
-      setToast({ open: true, message: "Booking rejected ✅", severity: "success" });
+      setToast({ open: true, message: "Booking rejected and deleted ✅", severity: "success" });
     } catch (error) {
       console.error("Error rejecting booking:", error);
       setToast({ open: true, message: error.response?.data?.message || "Error rejecting booking", severity: "error" });
@@ -197,20 +213,27 @@ export default function AdminDashboard() {
   const handleUpdateAdmin = async () => {
     try {
       const token = localStorage.getItem("token");
-      await API.put(`/admin/update`, { email: newEmail, password: newPassword }, { headers: { Authorization: `Bearer ${token}` } });
-      setToast({ open: true, message: "Admin updated ✅", severity: "success" });
+      await API.put(
+        `/admin/update`,
+        { email: newEmail, password: newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setToast({ open: true, message: "Admin credentials updated ✅", severity: "success" });
       setOpenAdminDialog(false);
       setNewEmail("");
       setNewPassword("");
     } catch (error) {
       console.error("Error updating admin:", error.response?.data || error.message);
-      setToast({ open: true, message: "Error updating admin", severity: "error" });
+      setToast({ open: true, message: "Error updating admin credentials", severity: "error" });
     }
   };
 
+  // Drawer content for mobile
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
-      <Typography variant="h6" sx={{ my: 2 }}>Admin Dashboard</Typography>
+      <Typography variant="h6" sx={{ my: 2 }}>
+        Admin Dashboard
+      </Typography>
       <List>
         <ListItem button onClick={() => (window.location.href = "/admin/packages")}>
           <ListItemIcon><PackageIcon /></ListItemIcon>
@@ -238,7 +261,7 @@ export default function AdminDashboard() {
 
   return (
     <Box>
-      {/* 🔝 AppBar */}
+      {/* AppBar with Hamburger for mobile */}
       <AppBar position="sticky" sx={{ backgroundColor: "#1976d2", mb: 4 }}>
         <Toolbar>
           <IconButton
@@ -249,22 +272,20 @@ export default function AdminDashboard() {
           >
             <MenuIcon />
           </IconButton>
-
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
             Admin Dashboard
           </Typography>
-
-          <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 2 }}>
+          <Box sx={{ display: { xs: "none", sm: "block" } }}>
             <Button color="inherit" startIcon={<PackageIcon />} onClick={() => (window.location.href = "/admin/packages")}>Manage Packages</Button>
-            <Button color="inherit" startIcon={<ManageAccountsIcon />} onClick={() => (window.location.href = "/admin/contacts")}>Manage Contacts</Button>
-            <Button color="inherit" startIcon={<PhotoLibraryIcon />} onClick={() => (window.location.href = "/admin/gallery")}>Manage Gallery</Button>
-            <Button color="inherit" startIcon={<AdminPanelSettingsIcon />} onClick={() => setOpenAdminDialog(true)}>Update Admin</Button>
-            <Button color="inherit" startIcon={<LogoutIcon />} onClick={() => { localStorage.removeItem("token"); window.location.href = "/home"; }}>Logout</Button>
+            <Button color="inherit" startIcon={<ManageAccountsIcon />} sx={{ ml: 2 }} onClick={() => (window.location.href = "/admin/contacts")}>Manage Contacts</Button>
+            <Button color="inherit" startIcon={<PhotoLibraryIcon />} sx={{ ml: 2 }} onClick={() => (window.location.href = "/admin/gallery")}>Manage Gallery</Button>
+            <Button color="inherit" startIcon={<AdminPanelSettingsIcon />} sx={{ ml: 2 }} onClick={() => setOpenAdminDialog(true)}>Update Admin</Button>
+            <Button color="inherit" startIcon={<LogoutIcon />} sx={{ ml: 2 }} onClick={() => { localStorage.removeItem("token"); window.location.href = "/home"; }}>Logout</Button>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* 🔹 Drawer */}
+      {/* Drawer for mobile */}
       <Drawer
         anchor="left"
         open={mobileOpen}
@@ -274,24 +295,22 @@ export default function AdminDashboard() {
         {drawer}
       </Drawer>
 
-      {/* Hero Section */}
+      {/* Page Heading */}
       <Box sx={{ textAlign: "center", mb: 4 }}>
         <Typography variant="h3" fontWeight="bold">Bookings</Typography>
       </Box>
 
+      {/* Search and Bookings */}
       <Box sx={{ p: 4 }}>
-        {/* Search */}
-        <Box sx={{ mb: 3 }}>
-          <TextField
-            label="Search by Name"
-            variant="outlined"
-            fullWidth
-            value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-          />
-        </Box>
+        <TextField
+          label="Search by Name"
+          variant="outlined"
+          fullWidth
+          value={searchTerm}
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+          sx={{ mb: 3 }}
+        />
 
-        {/* Bookings Grid */}
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
             <CircularProgress />
@@ -299,7 +318,9 @@ export default function AdminDashboard() {
         ) : (
           <Grid container spacing={3}>
             {sortedBookings.length === 0 ? (
-              <Typography variant="body1" sx={{ ml: 2, mt: 2, color: "gray", fontStyle: "italic" }}>❌ No bookings found.</Typography>
+              <Typography variant="body1" sx={{ ml: 2, mt: 2, color: "gray", fontStyle: "italic" }}>
+                ❌ No bookings found.
+              </Typography>
             ) : (
               sortedBookings.map((b) => {
                 const dateObj = new Date(b.date);
@@ -318,12 +339,14 @@ export default function AdminDashboard() {
                         <Typography>Guests: {b.guests}</Typography>
                         <Typography>Date: {formattedDate}</Typography>
                         <Typography>Time: {formattedTime}</Typography>
-
                         <Box sx={{ mt: 2 }}>
-                          <Chip label={b.status || "pending"} color={b.status === "approved" ? "success" : b.status === "rejected" ? "error" : "warning"} sx={{ mr: 1 }} />
+                          <Chip
+                            label={b.status || "pending"}
+                            color={b.status === "approved" ? "success" : b.status === "rejected" ? "error" : "warning"}
+                            sx={{ mr: 1 }}
+                          />
                           <Chip label={b.isPaid ? "Paid ✅" : "Not Paid"} color={b.isPaid ? "success" : "error"} />
                         </Box>
-
                         <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
                           {!b.status || b.status !== "approved" ? (
                             <Button onClick={() => handleOpenAmountDialog(b._id || b.id)} variant="contained" color="success" fullWidth>
@@ -363,7 +386,16 @@ export default function AdminDashboard() {
         <Dialog open={openAmountDialog} onClose={() => setOpenAmountDialog(false)}>
           <DialogTitle>Enter Amount for Booking</DialogTitle>
           <DialogContent>
-            <TextField autoFocus margin="dense" label="Amount (₹)" type="number" fullWidth value={amount} onChange={(e) => setAmount(e.target.value)} helperText={`Maximum allowed amount is ₹${MAX_AMOUNT.toLocaleString()}`} />
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Amount (₹)"
+              type="number"
+              fullWidth
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              helperText={`Maximum allowed amount is ₹${MAX_AMOUNT.toLocaleString()}`}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenAmountDialog(false)}>Cancel</Button>
@@ -371,7 +403,7 @@ export default function AdminDashboard() {
           </DialogActions>
         </Dialog>
 
-        {/* Admin Update Dialog */}
+        {/* Update Admin Dialog */}
         <Dialog open={openAdminDialog} onClose={() => setOpenAdminDialog(false)}>
           <DialogTitle>Update Admin Credentials</DialogTitle>
           <DialogContent>
