@@ -18,14 +18,9 @@ import {
   DialogActions,
   AppBar,
   Toolbar,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   IconButton,
 } from "@mui/material";
-
+import API from "../Api";
 import { io } from "socket.io-client";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import PackageIcon from "@mui/icons-material/Category";
@@ -33,8 +28,6 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import MenuIcon from "@mui/icons-material/Menu";
-
-import API from "../Api";
 
 // 🔹 Highlight search matches
 function HighlightedText({ text, highlight }) {
@@ -64,7 +57,7 @@ function HighlightedText({ text, highlight }) {
 }
 
 export default function AdminDashboard() {
-  const MAX_AMOUNT = 1000000; // Razorpay max amount limit in ₹
+  const MAX_AMOUNT = 1000000;
 
   const [bookings, setBookings] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,13 +69,10 @@ export default function AdminDashboard() {
   const [openAmountDialog, setOpenAmountDialog] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [amount, setAmount] = useState("");
+
   const [openAdminDialog, setOpenAdminDialog] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
-
-  // Mobile drawer
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
   // 📡 Socket.IO setup
   useEffect(() => {
@@ -92,6 +82,7 @@ export default function AdminDashboard() {
       setBookings((prev) =>
         prev.map((b) => (b._id === bookingId ? { ...b, isPaid } : b))
       );
+
       if (isPaid) {
         setToast({
           open: true,
@@ -153,6 +144,7 @@ export default function AdminDashboard() {
 
   const handleConfirmApprove = async () => {
     const amt = Number(amount);
+
     if (!amount || isNaN(amt) || amt <= 0) {
       setToast({ open: true, message: "Please enter a valid amount.", severity: "error" });
       return;
@@ -189,7 +181,6 @@ export default function AdminDashboard() {
         error.response?.data?.description?.includes("maximum amount")
           ? "⚠️ Amount exceeds Razorpay limit. Please enter a smaller amount."
           : error.response?.data?.message || "Error approving booking";
-
       setToast({ open: true, message: errorMessage, severity: "error" });
     }
   };
@@ -202,6 +193,7 @@ export default function AdminDashboard() {
         { id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setBookings((prev) => prev.filter((b) => b._id !== id && b.id !== id));
       setToast({ open: true, message: "Booking rejected and deleted ✅", severity: "success" });
     } catch (error) {
@@ -228,151 +220,167 @@ export default function AdminDashboard() {
     }
   };
 
-  // Drawer content for mobile
-  const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
-      <Typography variant="h6" sx={{ my: 2 }}>
-        Admin Dashboard
-      </Typography>
-      <List>
-        <ListItem button onClick={() => (window.location.href = "/admin/packages")}>
-          <ListItemIcon><PackageIcon /></ListItemIcon>
-          <ListItemText primary="Manage Packages" />
-        </ListItem>
-        <ListItem button onClick={() => (window.location.href = "/admin/contacts")}>
-          <ListItemIcon><ManageAccountsIcon /></ListItemIcon>
-          <ListItemText primary="Manage Contacts" />
-        </ListItem>
-        <ListItem button onClick={() => (window.location.href = "/admin/gallery")}>
-          <ListItemIcon><PhotoLibraryIcon /></ListItemIcon>
-          <ListItemText primary="Manage Gallery" />
-        </ListItem>
-        <ListItem button onClick={() => setOpenAdminDialog(true)}>
-          <ListItemIcon><AdminPanelSettingsIcon /></ListItemIcon>
-          <ListItemText primary="Update Admin" />
-        </ListItem>
-        <ListItem button onClick={() => { localStorage.removeItem("token"); window.location.href = "/home"; }}>
-          <ListItemIcon><LogoutIcon /></ListItemIcon>
-          <ListItemText primary="Logout" />
-        </ListItem>
-      </List>
-    </Box>
-  );
-
   return (
     <Box>
-      {/* AppBar with Hamburger for mobile */}
       <AppBar position="sticky" sx={{ backgroundColor: "#1976d2", mb: 4 }}>
-        <Toolbar>
+        <Toolbar sx={{ display: "flex", flexWrap: "wrap" }}>
+          {/* Menu Icon for mobile */}
           <IconButton
             color="inherit"
             edge="start"
-            sx={{ mr: 2, display: { sm: "none" } }}
-            onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { xs: "inline-flex", md: "none" } }}
           >
             <MenuIcon />
           </IconButton>
+
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
             Admin Dashboard
           </Typography>
-          <Box sx={{ display: { xs: "none", sm: "block" } }}>
-            <Button color="inherit" startIcon={<PackageIcon />} onClick={() => (window.location.href = "/admin/packages")}>Manage Packages</Button>
-            <Button color="inherit" startIcon={<ManageAccountsIcon />} sx={{ ml: 2 }} onClick={() => (window.location.href = "/admin/contacts")}>Manage Contacts</Button>
-            <Button color="inherit" startIcon={<PhotoLibraryIcon />} sx={{ ml: 2 }} onClick={() => (window.location.href = "/admin/gallery")}>Manage Gallery</Button>
-            <Button color="inherit" startIcon={<AdminPanelSettingsIcon />} sx={{ ml: 2 }} onClick={() => setOpenAdminDialog(true)}>Update Admin</Button>
-            <Button color="inherit" startIcon={<LogoutIcon />} sx={{ ml: 2 }} onClick={() => { localStorage.removeItem("token"); window.location.href = "/home"; }}>Logout</Button>
+
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+            <Button
+              color="inherit"
+              startIcon={<PackageIcon />}
+              onClick={() => (window.location.href = "/admin/packages")}
+            >
+              Manage Packages
+            </Button>
+
+            <Button
+              color="inherit"
+              startIcon={<ManageAccountsIcon />}
+              onClick={() => (window.location.href = "/admin/contacts")}
+            >
+              Manage Contacts
+            </Button>
+
+            <Button
+              color="inherit"
+              startIcon={<PhotoLibraryIcon />}
+              onClick={() => (window.location.href = "/admin/gallery")}
+            >
+              Manage Gallery
+            </Button>
+
+            <Button
+              color="inherit"
+              startIcon={<AdminPanelSettingsIcon />}
+              onClick={() => setOpenAdminDialog(true)}
+            >
+              Update Admin
+            </Button>
+
+            <Button
+              color="inherit"
+              startIcon={<LogoutIcon />}
+              onClick={() => {
+                localStorage.removeItem("token");
+                window.location.href = "/home";
+              }}
+            >
+              Logout
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Drawer for mobile */}
-      <Drawer
-        anchor="left"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        sx={{ display: { sm: "none" }, "& .MuiDrawer-paper": { boxSizing: "border-box", width: 240 } }}
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 2,
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
       >
-        {drawer}
-      </Drawer>
-
-      {/* Page Heading */}
-      <Box sx={{ textAlign: "center", mb: 4 }}>
-        <Typography variant="h3" fontWeight="bold">Bookings</Typography>
+        <Typography variant="h3" fontWeight="bold">
+          Bookings
+        </Typography>
       </Box>
 
-      {/* Search and Bookings */}
       <Box sx={{ p: 4 }}>
-        <TextField
-          label="Search by Name"
-          variant="outlined"
-          fullWidth
-          value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-          sx={{ mb: 3 }}
-        />
+        <Box sx={{ mb: 3 }}>
+          <TextField
+            label="Search by Name"
+            variant="outlined"
+            fullWidth
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
+          />
+        </Box>
 
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
             <CircularProgress />
           </Box>
         ) : (
-          <Grid container spacing={3}>
-            {sortedBookings.length === 0 ? (
-              <Typography variant="body1" sx={{ ml: 2, mt: 2, color: "gray", fontStyle: "italic" }}>
-                ❌ No bookings found.
-              </Typography>
-            ) : (
-              sortedBookings.map((b) => {
-                const dateObj = new Date(b.date);
-                const formattedDate = dateObj.toLocaleDateString();
-                const formattedTime = dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+          <>
+            <Grid container spacing={3}>
+              {sortedBookings.length === 0 ? (
+                <Typography variant="body1" sx={{ ml: 2, mt: 2, color: "gray", fontStyle: "italic" }}>
+                  ❌ No bookings found.
+                </Typography>
+              ) : (
+                sortedBookings.map((b) => {
+                  const dateObj = new Date(b.date);
+                  const formattedDate = dateObj.toLocaleDateString();
+                  const formattedTime = dateObj.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
 
-                return (
-                  <Grid item xs={12} md={6} lg={4} key={b._id || b.id}>
-                    <Card sx={{ boxShadow: 4, borderRadius: 3, transition: "0.3s", "&:hover": { transform: "scale(1.02)" } }}>
-                      <CardContent>
-                        <Typography variant="h6" gutterBottom>
-                          <HighlightedText text={b.name} highlight={searchTerm} /> ({b.package})
-                        </Typography>
-                        <Typography>Email: {b.email}</Typography>
-                        <Typography>Phone: {b.phone}</Typography>
-                        <Typography>Guests: {b.guests}</Typography>
-                        <Typography>Date: {formattedDate}</Typography>
-                        <Typography>Time: {formattedTime}</Typography>
-                        <Box sx={{ mt: 2 }}>
-                          <Chip
-                            label={b.status || "pending"}
-                            color={b.status === "approved" ? "success" : b.status === "rejected" ? "error" : "warning"}
-                            sx={{ mr: 1 }}
-                          />
-                          <Chip label={b.isPaid ? "Paid ✅" : "Not Paid"} color={b.isPaid ? "success" : "error"} />
-                        </Box>
-                        <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
-                          {!b.status || b.status !== "approved" ? (
-                            <Button onClick={() => handleOpenAmountDialog(b._id || b.id)} variant="contained" color="success" fullWidth>
-                              Approve
-                            </Button>
-                          ) : null}
-                          {!b.isPaid ? (
-                            <Button onClick={() => handleReject(b._id || b.id)} variant="contained" color="error" fullWidth>
-                              Reject
-                            </Button>
-                          ) : null}
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                );
-              })
+                  return (
+                    <Grid item xs={12} md={6} lg={4} key={b._id || b.id}>
+                      <Card sx={{ boxShadow: 4, borderRadius: 3, transition: "0.3s", "&:hover": { transform: "scale(1.02)" } }}>
+                        <CardContent>
+                          <Typography variant="h6" gutterBottom>
+                            <HighlightedText text={b.name} highlight={searchTerm} /> ({b.package})
+                          </Typography>
+                          <Typography>Email: {b.email}</Typography>
+                          <Typography>Phone: {b.phone}</Typography>
+                          <Typography>Guests: {b.guests}</Typography>
+                          <Typography>Date: {formattedDate}</Typography>
+                          <Typography>Time: {formattedTime}</Typography>
+
+                          <Box sx={{ mt: 2 }}>
+                            <Chip
+                              label={b.status || "pending"}
+                              color={b.status === "approved" ? "success" : b.status === "rejected" ? "error" : "warning"}
+                              sx={{ mr: 1 }}
+                            />
+                            <Chip label={b.isPaid ? "Paid ✅" : "Not Paid"} color={b.isPaid ? "success" : "error"} />
+                          </Box>
+
+                          <Box sx={{ mt: 3, display: "flex", gap: 1 }}>
+                            {!b.status || b.status !== "approved" ? (
+                              <Button onClick={() => handleOpenAmountDialog(b._id || b.id)} variant="contained" color="success" fullWidth>
+                                Approve
+                              </Button>
+                            ) : null}
+
+                            {!b.isPaid ? (
+                              <Button onClick={() => handleReject(b._id || b.id)} variant="contained" color="error" fullWidth>
+                                Reject
+                              </Button>
+                            ) : null}
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  );
+                })
+              )}
+            </Grid>
+
+            {totalPages > 1 && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Pagination count={totalPages} page={page} onChange={(e, value) => setPage(value)} color="primary" size="large" />
+              </Box>
             )}
-          </Grid>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-            <Pagination count={totalPages} page={page} onChange={(e, value) => setPage(value)} color="primary" size="large" />
-          </Box>
+          </>
         )}
 
         {/* Toast Snackbar */}
@@ -399,7 +407,9 @@ export default function AdminDashboard() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenAmountDialog(false)}>Cancel</Button>
-            <Button onClick={handleConfirmApprove} variant="contained" color="success">Approve & Send Payment Link</Button>
+            <Button onClick={handleConfirmApprove} variant="contained" color="success">
+              Approve & Send Payment Link
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -412,7 +422,9 @@ export default function AdminDashboard() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenAdminDialog(false)}>Cancel</Button>
-            <Button onClick={handleUpdateAdmin} variant="contained" color="primary">Save</Button>
+            <Button onClick={handleUpdateAdmin} variant="contained" color="primary">
+              Save
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>
