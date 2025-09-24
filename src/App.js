@@ -19,34 +19,26 @@ import PackageManagement from "./Components/PackageManagement";
 import ContactManagement from "./Components/ContactManagement";
 import AdminGallery from "./Components/AdminGallery";
 
-const muiTheme = createTheme(); // ✅ Customize if needed
+const muiTheme = createTheme();
 
 function App() {
   return (
     <ThemeProvider theme={muiTheme}>
-      <CssBaseline /> {/* Reset default browser styles */}
+      <CssBaseline />
       <Router>
         <Routes>
-          {/* Default layout with sidebar/navbar */}
+          {/* Public Layout with Sidebar/Menu */}
           <Route path="/" element={<CommonPage />}>
-          <Route path="home" element={<Home />} />
-          </Route>
-            {/* Redirect / → /home */}
-            <Route index element={<Navigate to="home" replace />} />
-
-            {/* Public Routes */}
-            
+            <Route index element={<Home />} />
+            <Route path="home" element={<Home />} />
             <Route path="gallery" element={<Gallery />} />
-            
             <Route path="contact" element={<Contacts />} />
             <Route path="booking" element={<Booking />} />
-          
-          <Route path="packages" element={<Packages />} />
+            <Route path="packages" element={<Packages />} />
+          </Route>
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLogin />} />
-
-          {/* Protected Admin Routes */}
           <Route
             path="/admin/dashboard"
             element={
@@ -55,7 +47,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/admin/packages"
             element={
@@ -64,7 +55,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/admin/contacts"
             element={
@@ -73,7 +63,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/admin/gallery"
             element={
@@ -83,7 +72,7 @@ function App() {
             }
           />
 
-          {/* Catch-all route → redirect to home */}
+          {/* Catch-all → redirect to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
