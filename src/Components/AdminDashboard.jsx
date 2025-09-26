@@ -29,7 +29,7 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useNavigate } from "react-router-dom";
-import { BACKEND_URL } from "./API"
+import { BACKEND_URL } from "../API"
 
 // 🔹 Highlight search matches
 function HighlightedText({ text, highlight }) {
