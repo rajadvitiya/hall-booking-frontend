@@ -74,6 +74,7 @@ export default function AdminDashboard() {
   const [openAdminDialog, setOpenAdminDialog] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
+   const navigate = useNavigate();
   
 
 
