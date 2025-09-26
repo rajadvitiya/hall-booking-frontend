@@ -74,9 +74,17 @@ export default function AdminDashboard() {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/home", { replace: true });
+    }
+  }, [navigate]);
+
   // 📡 Socket.IO setup
   useEffect(() => {
-    const socket = io("http://localhost:5000");
+    const socket = io(BACKEND_URL);
 
     socket.on("paymentUpdate", ({ bookingId, isPaid, name }) => {
       setBookings((prev) =>
