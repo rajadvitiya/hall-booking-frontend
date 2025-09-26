@@ -29,6 +29,7 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useNavigate } from "react-router-dom";
+import { BACKEND_URL } from "./API"
 
 // 🔹 Highlight search matches
 function HighlightedText({ text, highlight }) {
@@ -74,7 +75,7 @@ export default function AdminDashboard() {
   const [openAdminDialog, setOpenAdminDialog] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   
 
 
