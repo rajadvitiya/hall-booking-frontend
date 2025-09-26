@@ -9,4 +9,8 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+// Example
+export const BACKEND_URL = "https://hall-booking-backend1.onrender.com/api";
+
+
 export default API;
